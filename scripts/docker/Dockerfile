@@ -3,8 +3,12 @@ FROM ubuntu:18.04
 
 MAINTAINER Antoni Rosinol "arosinol@mit.edu"
 
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=Asia/Shanghai
+
 # To avoid tzdata asking for geographic location...
 ENV DEBIAN_frontend noninteractive
+
 
 # Set the working directory to /root
 ENV DIRPATH /root
@@ -20,7 +24,8 @@ RUN apt-get update && apt-get install -y xvfb
 # Install GTSAM
 RUN apt-get update && apt-get install -y libboost-all-dev
 ADD https://api.github.com/repos/borglab/gtsam/git/refs/heads/master version.json
-RUN git clone https://github.com/borglab/gtsam.git
+# RUN git clone https://github.com/borglab/gtsam.git
+RUN git clone --branch 4.1.1 https://github.com/borglab/gtsam.git
 RUN cd gtsam && \
     git fetch && \
     mkdir build && \
@@ -44,6 +49,9 @@ RUN cd opencv && \
 RUN git clone https://github.com/opencv/opencv_contrib.git
 RUN cd opencv_contrib && \
       git checkout tags/3.3.1
+
+RUN sed -i '/set(the_description "Images stitching")/a INCLUDE_DIRECTORIES("/root/opencv_contrib/modules/xfeatures2d/include")' /root/opencv/modules/stitching/CMakeLists.txt
+
 
 RUN cd opencv/build && \
       cmake -DCMAKE_BUILD_TYPE=Release \
